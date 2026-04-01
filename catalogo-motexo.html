@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motexo Repuestos — Catálogo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #111; }
+
+  .top { background: #fff; padding: 14px 16px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .logo { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+  .logo span { color: #e63000; }
+  .cart-pill { display: flex; align-items: center; gap: 6px; padding: 7px 14px; border: 1px solid #ddd; border-radius: 999px; cursor: pointer; font-size: 13px; background: #fff; }
+  .cart-pill:hover { background: #f5f5f5; }
+
+  .search-wrap { background: #fff; padding: 12px 16px; border-bottom: 1px solid #e5e5e5; }
+  .search-wrap input { width: 100%; padding: 10px 14px; font-size: 14px; border: 1px solid #ddd; border-radius: 10px; outline: none; background: #fafafa; }
+  .search-wrap input:focus { border-color: #aaa; background: #fff; }
+
+  .cat-pills { display: flex; gap: 6px; padding: 10px 16px; overflow-x: auto; background: #fff; border-bottom: 1px solid #e5e5e5; }
+  .cat-pills::-webkit-scrollbar { display: none; }
+  .cpill { padding: 5px 14px; border-radius: 999px; font-size: 12px; border: 1px solid #ddd; color: #666; cursor: pointer; white-space: nowrap; background: #fff; }
+  .cpill.sel { border-color: #111; color: #111; background: #f0f0f0; font-weight: 500; }
+
+  .prod-list { padding: 12px 16px; display: flex; flex-direction: column; gap: 6px; }
+
+  .section-label { font-size: 11px; color: #999; letter-spacing: 1px; padding: 14px 16px 4px; }
+
+  .prod-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border: 1px solid #e5e5e5; border-radius: 10px; background: #fff; }
+  .prod-row:hover { border-color: #ccc; }
+  .prod-left { flex: 1; }
+  .prod-name { font-size: 13px; font-weight: 500; }
+  .prod-sku { font-size: 11px; color: #999; margin-top: 2px; }
+  .prod-price { font-size: 13px; font-weight: 600; margin-right: 12px; white-space: nowrap; }
+
+  .qty-ctrl { display: flex; align-items: center; gap: 6px; }
+  .qbtn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid #ddd; background: #fff; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #111; }
+  .qbtn:hover { background: #f5f5f5; }
+  .qbtn:active { transform: scale(0.95); }
+  .qbtn.zero { opacity: 0.3; }
+  .qval { font-size: 13px; min-width: 20px; text-align: center; font-weight: 500; }
+
+  .cart-section { padding: 0 16px 30px; }
+  .summary { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .sum-row { display: flex; justify-content: space-between; font-size: 13px; color: #555; padding: 4px 0; }
+  .sum-total { display: flex; justify-content: space-between; font-size: 15px; font-weight: 600; padding-top: 10px; margin-top: 6px; border-top: 1px solid #eee; }
+  .empty-msg { font-size: 13px; color: #aaa; padding: 8px 0 16px; }
+
+  .wpp-btn { width: 100%; padding: 15px; border-radius: 12px; background: #25D366; color: #fff; border: none; cursor: pointer; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .wpp-btn:hover { background: #20bf5b; }
+  .wpp-btn:active { transform: scale(0.98); }
+  .wpp-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .badge { background: #e63000; color: #fff; border-radius: 999px; font-size: 10px; padding: 1px 7px; font-weight: 600; }
+
+  .no-results { text-align: center; padding: 32px 16px; color: #aaa; font-size: 14px; }
+
+  /* ── INSTRUCCIONES PARA ACTUALIZAR ── */
+  .instructions { margin: 0 16px 16px; background: #fffbf0; border: 1px solid #ffe08a; border-radius: 10px; padding: 14px; font-size: 12px; color: #7a5c00; line-height: 1.6; }
+  .instructions strong { display: block; margin-bottom: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">MOTEXO <span>REPUESTOS</span></div>
+  <div class="cart-pill" onclick="scrollToCart()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path d="M2 2h1.5l2 7h6l1.5-5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="7" cy="13" r="1" fill="currentColor"/>
+      <circle cx="11" cy="13" r="1" fill="currentColor"/>
+    </svg>
+    <span id="cart-label">0 productos</span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input id="search" placeholder="Buscar por nombre o SKU..." oninput="render()">
+</div>
+
+<div class="cat-pills" id="cat-pills"></div>
+
+<div class="prod-list" id="prod-list"></div>
+
+<div class="section-label" id="cart-title"></div>
+<div class="cart-section" id="cart-section"></div>
+
+
+<script>
+// ════════════════════════════════════════════════
+//  CONFIGURACIÓN — editá solo esta sección
+// ════════════════════════════════════════════════
+
+const WPP_NUMERO = "5491140347033"; // tu número de WhatsApp
+
+// PRODUCTOS — agregá, quitá o modificá filas acá
+// Formato: { sku, nombre, precio, cat }
+const productos = [
+  // ── Frenos ──
+  { sku: "FRE-001", nombre: "Disco de freno delantero 320mm", precio: 12400, cat: "Frenos" },
+  { sku: "FRE-002", nombre: "Pastillas de freno traseras",     precio: 3800,  cat: "Frenos" },
+  { sku: "FRE-003", nombre: "Líquido de frenos DOT 4",         precio: 1200,  cat: "Frenos" },
+
+  // ── Transmisión ──
+  { sku: "TRA-001", nombre: "Kit cadena y piñones 520",        precio: 8900,  cat: "Transmisión" },
+  { sku: "TRA-002", nombre: "Cable de embrague universal",     precio: 1800,  cat: "Transmisión" },
+  { sku: "TRA-003", nombre: "Piñón corona 42T",                precio: 2600,  cat: "Transmisión" },
+
+  // ── Motor ──
+  { sku: "MOT-001", nombre: "Bujía NGK Iridium CR8EIX",        precio: 1400,  cat: "Motor" },
+  { sku: "MOT-002", nombre: "Aceite motor 10W40 1L",           precio: 2100,  cat: "Motor" },
+  { sku: "MOT-003", nombre: "Junta de tapa de cilindro",       precio: 3500,  cat: "Motor" },
+
+  // ── Suspensión ──
+  { sku: "SUS-001", nombre: "Amortiguador trasero YSS",        precio: 21500, cat: "Suspensión" },
+  { sku: "SUS-002", nombre: "Resorte de horquilla par",        precio: 4800,  cat: "Suspensión" },
+
+  // ── Filtros ──
+  { sku: "FIL-001", nombre: "Filtro de aire K&N",              precio: 3200,  cat: "Filtros" },
+  { sku: "FIL-002", nombre: "Filtro de aceite HifloFiltro",    precio: 950,   cat: "Filtros" },
+
+  // ── Accesorios ──
+  { sku: "ACC-001", nombre: "Manubrio aluminio CNC",           precio: 6500,  cat: "Accesorios" },
+  { sku: "ACC-002", nombre: "Espejo retrovisor izquierdo",     precio: 2900,  cat: "Accesorios" },
+];
+
+// ════════════════════════════════════════════════
+//  FIN CONFIGURACIÓN — no modificar abajo
+// ════════════════════════════════════════════════
+
+let cart = {};
+let catSel = "Todos";
+const cats = ["Todos", ...new Set(productos.map(p => p.cat))];
+
+function fmt(n) {
+  return "$" + Math.round(n).toLocaleString("es-AR");
+}
+
+function buildCats() {
+  document.getElementById("cat-pills").innerHTML = cats.map(c =>
+    `<div class="cpill${c === catSel ? " sel" : ""}" onclick="selCat('${c}')">${c}</div>`
+  ).join("");
+}
+
+function selCat(c) { catSel = c; render(); }
+
+function getFiltered() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  return productos.filter(p => {
+    const matchCat = catSel === "Todos" || p.cat === catSel;
+    const matchQ = !q || p.nombre.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+}
+
+function changeQty(sku, delta) {
+  cart[sku] = (cart[sku] || 0) + delta;
+  if (cart[sku] <= 0) delete cart[sku];
+  render();
+}
+
+function render() {
+  buildCats();
+  const filtered = getFiltered();
+  const list = document.getElementById("prod-list");
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="no-results">No se encontraron productos</div>`;
+  } else {
+    list.innerHTML = filtered.map(p => {
+      const q = cart[p.sku] || 0;
+      return `<div class="prod-row">
+        <div class="prod-left">
+          <div class="prod-name">${p.nombre}</div>
+          <div class="prod-sku">${p.sku}</div>
+        </div>
+        <span class="prod-price">${fmt(p.precio)}</span>
+        <div class="qty-ctrl">
+          <button class="qbtn${q === 0 ? " zero" : ""}" onclick="changeQty('${p.sku}', -1)">−</button>
+          <span class="qval">${q}</span>
+          <button class="qbtn" onclick="changeQty('${p.sku}', 1)">+</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  const items = Object.entries(cart);
+  const totalItems = items.reduce((s, [, q]) => s + q, 0);
+  const total = items.reduce((s, [sku]) => {
+    const p = productos.find(x => x.sku === sku);
+    return s + (p ? p.precio * cart[sku] : 0);
+  }, 0);
+
+  document.getElementById("cart-label").innerHTML = totalItems > 0
+    ? `${totalItems} prod · ${fmt(total)}`
+    : "0 productos";
+
+  const sec = document.getElementById("cart-section");
+  const title = document.getElementById("cart-title");
+
+  if (items.length === 0) {
+    title.textContent = "";
+    sec.innerHTML = `<p class="empty-msg">Todavía no agregaste productos al pedido.</p>`;
+    return;
+  }
+
+  title.textContent = "TU PEDIDO";
+  const rows = items.map(([sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    return `<div class="sum-row"><span>${p.nombre} ×${qty}</span><span>${fmt(p.precio * qty)}</span></div>`;
+  }).join("");
+
+  sec.innerHTML = `
+    <div class="summary">
+      ${rows}
+      <div class="sum-total"><span>Total</span><span>${fmt(total)}</span></div>
+    </div>
+    <button class="wpp-btn" onclick="enviarWpp()">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="white">
+        <path d="M8 1C4.13 1 1 4.13 1 8c0 1.25.33 2.42.9 3.43L1 15l3.67-.87A7 7 0 108 1zm0 12.6a5.6 5.6 0 01-2.85-.78l-.2-.12-2.18.52.54-2.12-.13-.21A5.6 5.6 0 118 13.6zm3.07-4.17c-.17-.08-1-.49-1.15-.54-.16-.06-.27-.08-.38.08s-.44.54-.54.65c-.1.1-.2.12-.37.04-.17-.08-.72-.27-1.37-.86a5.2 5.2 0 01-.95-1.2c-.1-.17-.01-.26.07-.34.08-.08.17-.2.25-.3.09-.1.12-.17.17-.28.06-.1.03-.2-.01-.28-.05-.08-.38-.92-.52-1.26-.14-.33-.28-.28-.38-.29h-.33c-.1 0-.27.04-.42.2-.14.16-.56.55-.56 1.33s.57 1.54.65 1.65c.08.1 1.12 1.71 2.72 2.4.38.16.68.26.91.33.38.12.73.1 1 .06.31-.05 1-.41 1.14-.8.14-.4.14-.74.1-.81-.05-.07-.16-.11-.33-.19z"/>
+      </svg>
+      Enviar pedido por WhatsApp
+    </button>`;
+}
+
+function enviarWpp() {
+  const items = Object.entries(cart);
+  const total = items.reduce((s, [sku]) => {
+    const p = productos.find(x => x.sku === sku);
+    return s + (p ? p.precio * cart[sku] : 0);
+  }, 0);
+
+  let msg = "Hola Motexo! Te paso mi pedido:\n\n";
+  items.forEach(([sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    msg += `• ${p.nombre} (${sku}) ×${qty} — ${fmt(p.precio * qty)}\n`;
+  });
+  msg += `\n*Total: ${fmt(total)}*`;
+
+  window.open(`https://wa.me/${WPP_NUMERO}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function scrollToCart() {
+  document.getElementById("cart-section").scrollIntoView({ behavior: "smooth" });
+}
+
+render();
+</script>
+
+</body>
+</html>
