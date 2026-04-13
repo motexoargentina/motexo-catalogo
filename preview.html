@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motexo Repuestos — Catálogo</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --line: #e5e5e5;
+    --text: #111111;
+    --muted: #777777;
+    --soft: #999999;
+    --brand: #e63000;
+    --green: #25D366;
+    --warn-bg: #fff8e8;
+    --warn-line: #f0d98a;
+    --warn-text: #7a5a00;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  .top {
+    background: var(--card);
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .logo {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .5px;
+  }
+  .logo span { color: var(--brand); }
+  .cart-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 13px;
+    background: #fff;
+    white-space: nowrap;
+  }
+  .search-wrap {
+    background: var(--card);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    outline: none;
+    background: #fafafa;
+  }
+  .cat-pills {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px;
+    overflow-x: auto;
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 58px;
+    z-index: 20;
+  }
+  .cat-pills::-webkit-scrollbar { display: none; }
+  .cpill {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    border: 1px solid #ddd;
+    color: #666;
+    cursor: pointer;
+    white-space: nowrap;
+    background: #fff;
+  }
+  .cpill.sel {
+    border-color: #111;
+    color: #111;
+    background: #f2f2f2;
+    font-weight: 600;
+  }
+  .results-meta {
+    padding: 12px 16px 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .prod-list {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .prod-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    gap: 10px;
+  }
+  .prod-row.needs-review {
+    border-color: var(--warn-line);
+    background: #fffdf6;
+  }
+  .prod-left {
+    flex: 1;
+    min-width: 0;
+  }
+  .prod-name {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+  .prod-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+    align-items: center;
+  }
+  .prod-sku {
+    font-size: 11px;
+    color: var(--soft);
+  }
+  .prod-tag {
+    font-size: 10px;
+    color: #555;
+    border: 1px solid #e1e1e1;
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: #fafafa;
+  }
+  .review-dot {
+    font-size: 11px;
+    color: var(--warn-text);
+    border: 1px solid var(--warn-line);
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: var(--warn-bg);
+  }
+  .prod-price {
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .qty-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .qbtn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111;
+  }
+  .qbtn.zero { opacity: .35; }
+  .qval {
+    font-size: 13px;
+    min-width: 20px;
+    text-align: center;
+    font-weight: 600;
+  }
+  .section-label {
+    font-size: 11px;
+    color: var(--soft);
+    letter-spacing: 1px;
+    padding: 12px 16px 4px;
+  }
+  .cart-section {
+    padding: 0 16px 28px;
+  }
+  .summary {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .sum-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    color: #555;
+    padding: 5px 0;
+  }
+  .sum-name {
+    max-width: 75%;
+  }
+  .sum-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: 700;
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid #eee;
+  }
+  .empty-msg, .no-results {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  .no-results {
+    text-align: center;
+    padding: 28px 16px;
+  }
+  .wpp-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    background: var(--green);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .review-panel {
+    margin: 0 16px 30px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .review-head {
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .review-title {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .review-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+  .review-toggle {
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .review-body {
+    display: none;
+  }
+  .review-body.open {
+    display: block;
+  }
+  .review-filters {
+    padding: 10px 12px 0;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .review-filter-btn {
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 999px;
+    padding: 7px 11px;
+    font-size: 12px;
+    cursor: pointer;
+    color: #555;
+  }
+  .review-filter-btn.active {
+    border-color: #111;
+    color: #111;
+    background: #f3f3f3;
+    font-weight: 700;
+  }
+  .review-list {
+    padding: 10px 12px 14px;
+  }
+  .review-empty {
+    padding: 10px 4px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .review-item {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #fafafa;
+  }
+  .review-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .review-name {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  .review-sku {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .review-cat {
+    font-size: 11px;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 999px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    background: #fff;
+  }
+  .review-motivos {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .review-tag {
+    font-size: 11px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border: 1px solid var(--warn-line);
+  }
+  .review-original {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #777;
+    line-height: 1.45;
+  }
+  @media (max-width: 680px) {
+    .prod-row {
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .prod-price {
+      order: 3;
+      width: 100%;
+      margin-top: -4px;
+    }
+    .qty-ctrl {
+      margin-left: auto;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="logo">MOTEXO <span>REPUESTOS</span></div>
+  <div class="cart-pill" onclick="scrollToCart()">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+      <path d="M2 2h1.5l2 7h6l1.5-5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="7" cy="13" r="1" fill="currentColor"/>
+      <circle cx="11" cy="13" r="1" fill="currentColor"/>
+    </svg>
+    <span id="cart-label">0 productos</span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <input id="search" placeholder="Buscar por nombre o SKU..." oninput="render()">
+</div>
+
+<div class="cat-pills" id="cat-pills"></div>
+<div class="results-meta" id="results-meta"></div>
+<div class="prod-list" id="prod-list"></div>
+
+<div class="section-label" id="cart-title"></div>
+<div class="cart-section" id="cart-section"></div>
+
+<div class="review-panel">
+  <div class="review-head">
+    <div>
+      <div class="review-title">Revisión manual</div>
+      <div class="review-sub" id="review-sub">0 productos para revisar</div>
+    </div>
+    <button class="review-toggle" onclick="toggleReviewPanel()">Ver revisión</button>
+  </div>
+  <div class="review-body" id="review-body">
+    <div class="review-filters" id="review-filters"></div>
+    <div class="review-list" id="review-list"></div>
+  </div>
+</div>
+
+<script>
+const WPP_NUMERO = "5491140347033";
+const productos = [{"sku": "835X20X30", "nombre": "/835X20X30 BANDO APLICA A CORVEN, EXPERT, STYLER ZANELLA, CRUISER, VX150 GILERA", "precio": 35970.65, "cat": "CORREAS"}, {"sku": "842X20X30", "nombre": "&842X20X30 CORREA BANDO 842X20X30 V-BELT APLICA A ZANELLA STYLER PRIMA 150/ R16, MOTOMEL VX 150", "precio": 35970.65, "cat": "Correas"}, {"sku": "90793AR40300", "nombre": "ACEITE LUBRICANTE 4T 20W40-MINERAL BOTELLA POR 1 LITRO YAMALUBE", "precio": 9557.06, "cat": "Aceites"}, {"sku": "23100-K36-J01", "nombre": "BANDO 23100-K36-J010", "precio": 43164.78, "cat": "CORREAS"}, {"sku": "BPR5ES", "nombre": "BUJIA NGK BPR5ES", "precio": 6409.37, "cat": "BUJIAS"}, {"sku": "BPR5HS", "nombre": "BUJIA NGK -BPR5HS", "precio": 6109.29, "cat": "BUJIAS"}, {"sku": "BPR6HS", "nombre": "BUJIA - NGK - BPR6HS", "precio": 6109.29, "cat": "BUJIAS"}, {"sku": "BPR7ES", "nombre": "BUJIA - NGK - BPR7ES", "precio": 6409.37, "cat": "BUJIAS"}, {"sku": "CPR7EA-9", "nombre": "BUJIA - NGK - CPR7EA-9", "precio": 6229.08, "cat": "BUJIAS"}, {"sku": "CPR8EA-9PLUS", "nombre": "BUJIA - NGK - CPR8EA-9PLUS", "precio": 4852.1, "cat": "BUJIAS"}, {"sku": "CR6HSAPLUS", "nombre": "BUJIA - NGK - CR6HSAPLUS", "precio": 4013.57, "cat": "BUJIAS"}, {"sku": "CR8E", "nombre": "BUJIA - NGK - CR8E", "precio": 6169.79, "cat": "BUJIAS"}, {"sku": "DPR7EA-9", "nombre": "BUJIA - NGK - DPR7EA-9", "precio": 6229.08, "cat": "BUJIAS"}, {"sku": "DPR8EA-9", "nombre": "BUJIA - NGK - DPR8EA-9", "precio": 6229.08, "cat": "BUJIAS"}, {"sku": "MR6K-9", "nombre": "BUJIA - NGK - MR6K-9", "precio": 7187.4, "cat": "BUJIAS"}, {"sku": "MR7C-9N", "nombre": "BUJIA - NGK - MR7C-9N", "precio": 7187.4, "cat": "BUJIAS"}, {"sku": "MR8E-9", "nombre": "BUJIA - NGK - MR8E-9", "precio": 7187.4, "cat": "BUJIAS"}, {"sku": "DPR8EIX-9/IX24B-D9390", "nombre": "BUJIAS NIPO DENSO JAPON IX24B-D9390 APLICA A NGK DPR8EIX-9", "precio": 10041.81, "cat": "BUJIAS"}, {"sku": "KGY-FG-401A/YF-01-5001-T1", "nombre": "CABLE ACELARADOR FZFI", "precio": 9483.17, "cat": "Otros"}, {"sku": "KGY-FG-401A1/YF-01-5001-T2", "nombre": "CABLE ACELARADOR FZFI", "precio": 7521.13, "cat": "Otros"}, {"sku": "KGS-GC-401/SG-02-5001", "nombre": "CABLE ACELARADOR GIXXER", "precio": 10529.59, "cat": "Otros"}, {"sku": "KGB-PJ-401/BP-10-5001", "nombre": "CABLE ACELARADOR ROUSER 200NS", "precio": 7666.56, "cat": "Otros"}, {"sku": "KGY-FG-402/YF-07-5002", "nombre": "CABLE EMBRAGUE FZFI", "precio": 7307.19, "cat": "Otros"}, {"sku": "KGB-PJ-402/BP-10-5002", "nombre": "CABLE EMBRAGUE ROUSER 200NS", "precio": 7194.13, "cat": "Otros"}, {"sku": "KGS-GC-402", "nombre": "CABLE EMBRAGUE Suzuki Gixxer", "precio": 13952.25, "cat": "Otros"}, {"sku": "2DP-E7641-00", "nombre": "CORREA BANDO 2DP-E7641-00 APLICA A NMAX 155 YAMAHA DEL 2018 AL 2022", "precio": 44963.31, "cat": "Correas"}, {"sku": "KGH-UA-77 D", "nombre": "ESPEJO DERECHO HONDA UNICORN", "precio": 6185.86, "cat": "Otros"}, {"sku": "12CIR", "nombre": "FARO LED MOTO 12W 12V 120X61X30MM - WATERPROOF IP67- OFF ROAD DESPACHO IC04 130213C", "precio": 21039.71, "cat": "Lamparas"}, {"sku": "18SF", "nombre": "FARO RECTANGULAR CON OJO ANGEL 18W 12/24V 110 X 77 X 53 MM - WATERPROOF IP67 - OFF ROAD", "precio": 17389.56, "cat": "Lamparas"}, {"sku": "KGB-PJ-44", "nombre": "FILTRO ACEITE BAJAJ NS200 DOMINAR 200 KTM 200 390", "precio": 1557.27, "cat": "Otros"}, {"sku": "KGB-BM-44", "nombre": "FILTRO ACEITE BOXER BAJAJ 150", "precio": 1317.69, "cat": "Otros"}, {"sku": "KGR-EC-44C", "nombre": "FILTRO ACEITE ENFIELD CONTINENTAL 535 EFI, CLASSIC 500 Y EFI BULLET 500 Honda XR 150", "precio": 1811.83, "cat": "Otros"}, {"sku": "KGR-EC-44/RE-05-1044", "nombre": "FILTRO ACEITE ENFIELD HIMALAYAN 411/450 Honda XR 150", "precio": 1497.38, "cat": "Otros"}, {"sku": "KGS-GC-44", "nombre": "FILTRO ACEITE SUZUKI GN EN 125 GIXXER 150 MOTEXO INDIA", "precio": 1257.8, "cat": "Otros"}, {"sku": "KGB-RA-44/TA-02-1044", "nombre": "FILTRO ACEITE TVS RTR 160", "precio": 1373.42, "cat": "Otros"}, {"sku": "KGB-RD-44/TA-06-1044", "nombre": "FILTRO ACEITE TVS RTR 160 4V", "precio": 1373.42, "cat": "Otros"}, {"sku": "KGB-RB-44/TA-04-1044", "nombre": "FILTRO ACEITE TVS RTR 180", "precio": 1373.42, "cat": "Otros"}, {"sku": "KGB-RC-44/TA-07-1044", "nombre": "FILTRO ACEITE TVS RTR 200 4V Yamaha Ray", "precio": 1373.42, "cat": "Otros"}, {"sku": "KGY-YR-44", "nombre": "FILTRO ACEITE YAMAHA FZ25 FZ250 YS250 YBR 250 RAPTOR 250 R15", "precio": 1197.9, "cat": "Otros"}, {"sku": "KGY-FG-44", "nombre": "FILTRO ACEITE YAMAHA FZFI FZ16 SZ15", "precio": 1197.9, "cat": "Otros"}, {"sku": "KGY-FZ-16", "nombre": "FILTRO AIRE", "precio": 6185.45, "cat": "Otros"}, {"sku": "KGB-AA-36/BG-02-1036", "nombre": "FILTRO AIRE AVENGER", "precio": 3204.66, "cat": "Otros"}, {"sku": "KGB-BM-36/BB-05-1036", "nombre": "FILTRO AIRE BOXER / BM 150", "precio": 2455.7, "cat": "Otros"}, {"sku": "KGB-DR-36/BN-01-1036", "nombre": "FILTRO AIRE DOMINAR", "precio": 5570.24, "cat": "Otros"}, {"sku": "KGY-YB-36/BK-01-1036", "nombre": "FILTRO AIRE DUKE", "precio": 7307.19, "cat": "Otros"}, {"sku": "KGY-FA-36/YF-01-1036", "nombre": "FILTRO AIRE FZ-S, FZ", "precio": 6278.51, "cat": "Otros"}, {"sku": "KGY-FR-36/YF-08-1036", "nombre": "FILTRO AIRE FZ250", "precio": 5630.13, "cat": "Otros"}, {"sku": "KGY-FG-36/YF-07-1036", "nombre": "FILTRO AIRE FZFI 2.0", "precio": 5630.13, "cat": "Otros"}, {"sku": "KGH-UA-36/HU-02-1036", "nombre": "FILTRO AIRE HONDA UNICORN", "precio": 4012.97, "cat": "Otros"}, {"sku": "KGR-EC-36", "nombre": "FILTRO AIRE Honda XR 150", "precio": 7247.3, "cat": "Otros"}, {"sku": "KGY-YR-36/YR-04-1036", "nombre": "FILTRO AIRE R15", "precio": 5929.61, "cat": "Otros"}, {"sku": "KGY-RC-36/YA-06-1036", "nombre": "FILTRO AIRE RAY", "precio": 5570.24, "cat": "Otros"}, {"sku": "KGB-PC-36/BP-01-1036", "nombre": "FILTRO AIRE ROUSER 135 LS", "precio": 2994.75, "cat": "Otros"}, {"sku": "KGS-GC-36/SG-02-1036", "nombre": "FILTRO AIRE SUZUKI GIXXER", "precio": 6867.13, "cat": "Otros"}, {"sku": "KGY-ZD-36", "nombre": "FILTRO AIRE Yamaha SZR", "precio": 7633.86, "cat": "Otros"}, {"sku": "KGB-DR-89", "nombre": "JUEGO DISCOS EMBRAGUE DOMINAR 400 MOTEXO INDIA", "precio": 24437.16, "cat": "Otros"}, {"sku": "KGB-PN-77", "nombre": "JUEGO ESPEJOS", "precio": 9942.57, "cat": "Otros"}, {"sku": "KGB-PJ-77", "nombre": "JUEGO ESPEJOS Bajaj Rouser 200NS", "precio": 19106.5, "cat": "Otros"}, {"sku": "KGB-DR-77", "nombre": "JUEGO ESPEJOS DOMINAR", "precio": 19046.61, "cat": "Otros"}, {"sku": "KGY-FR-77", "nombre": "JUEGO ESPEJOS FAZER Yamaha FZ 250 / FZ25", "precio": 11260.26, "cat": "Otros"}, {"sku": "KGB-PC-77", "nombre": "JUEGO ESPEJOS Rouser 135LS", "precio": 10781.1, "cat": "Otros"}, {"sku": "KGS-GC-77", "nombre": "JUEGO ESPEJOS Suzuki Gixxer", "precio": 11260.26, "cat": "Otros"}, {"sku": "KGY-FA-77", "nombre": "JUEGO ESPEJOS Yamaha FZ-S / FZ", "precio": 11260.26, "cat": "Otros"}, {"sku": "KGC-BF-08", "nombre": "KIT CILINDRO PISTON Y AROS PERNO Y SEG STD", "precio": 113544.13, "cat": "Otros"}, {"sku": "KGY-RX-08", "nombre": "KIT CILINDRO PISTON Y AROS PERNO Y SEG STD Yamaha RX 100", "precio": 417498.6, "cat": "Otros"}, {"sku": "KIT-RIF-SMASH", "nombre": "KIT DE TRANSMISION GILERA SMASH 110 CORONA 36/14 428H-108L", "precio": 28192.0, "cat": "Otros"}, {"sku": "KGB-BM-88", "nombre": "KIT DISCOS EMBRAGUE BAJAJ BOXER / BM 150 STD", "precio": 5510.34, "cat": "Otros"}, {"sku": "KGB-PC-89", "nombre": "KIT DISCOS EMBRAGUE BAJAJ PULSAR 135 LS OEM", "precio": 16950.28, "cat": "Otros"}, {"sku": "KGB-DR-88", "nombre": "KIT DISCOS EMBRAGUE DOMINAR STD", "precio": 8624.88, "cat": "Otros"}, {"sku": "KGR-EC-88", "nombre": "KIT DISCOS EMBRAGUE ENFIELD BULLET 350CC STD Honda XR 150", "precio": 10960.78, "cat": "Otros"}, {"sku": "KGY-YB-89", "nombre": "KIT DISCOS EMBRAGUE KTM DUKE OEM", "precio": 22939.78, "cat": "Otros"}, {"sku": "KGY-RV-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO", "precio": 7041.78, "cat": "Otros"}, {"sku": "KGS-GC-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO Suzuki Gixxer", "precio": 14544.33, "cat": "Otros"}, {"sku": "KGY-FA-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO Yamaha FZ-S / FZ", "precio": 5923.27, "cat": "Otros"}, {"sku": "KGY-FG-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO Yamaha FZFI 2.0", "precio": 5923.27, "cat": "Otros"}, {"sku": "KGY-RX-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO Yamaha RX 100", "precio": 5923.27, "cat": "Otros"}, {"sku": "KGY-ZD-12", "nombre": "KIT DISCOS EMBRAGUE MOTEXO Yamaha SZR", "precio": 5923.27, "cat": "Otros"}, {"sku": "KGK-KD-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL", "precio": 25205.47, "cat": "Otros"}, {"sku": "KGB-PC-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL Rouser 135LS", "precio": 18624.48, "cat": "Otros"}, {"sku": "KGS-GC-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL Suzuki Gixxer", "precio": 20269.42, "cat": "Otros"}, {"sku": "KGY-FA-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL Yamaha FZ-S / FZ", "precio": 16453.11, "cat": "Otros"}, {"sku": "KGY-FG-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL Yamaha FZFI 2.0", "precio": 16453.11, "cat": "Otros"}, {"sku": "KGY-ZD-13", "nombre": "KIT DISCOS EMBRAGUE OEM CALIDAD ORIGINAL Yamaha SZR", "precio": 20269.42, "cat": "Otros"}, {"sku": "KGB-RA-89", "nombre": "KIT DISCOS EMBRAGUE PLATES RTR 160 OEM", "precio": 18447.66, "cat": "Otros"}, {"sku": "KGB-PN-89", "nombre": "KIT DISCOS EMBRAGUE PULSAR 150/160 OEM", "precio": 18447.66, "cat": "Otros"}, {"sku": "KGB-PJ-88", "nombre": "KIT DISCOS EMBRAGUE PULSAR 200NS STD", "precio": 7067.61, "cat": "Otros"}, {"sku": "KGB-PJ-89", "nombre": "KIT DISCOS EMBRAGUE ROUSER NS200", "precio": 21921.57, "cat": "Otros"}, {"sku": "KGB-RA-88", "nombre": "KIT DISCOS EMBRAGUE RTR 160 STD", "precio": 5510.34, "cat": "Otros"}, {"sku": "KGB-AA-21/BG-02-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO AVENGER", "precio": 4643.48, "cat": "Otros"}, {"sku": "KGB-BM-21/BB-05-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO BOXER / BM 150", "precio": 3893.18, "cat": "Otros"}, {"sku": "KGR-EC-301C-1/RE-01-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO BULLET CLASSIC 350CC Honda XR 150", "precio": 12687.82, "cat": "Otros"}, {"sku": "KGB-DR-21/BN-01-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO DOMINAR", "precio": 9223.83, "cat": "Otros"}, {"sku": "KGY-FR-21/YE-01-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO FAZER FZ16/FZFI", "precio": 4578.1, "cat": "Otros"}, {"sku": "KGY-FG-21/YF-07-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO FZFI 2.0", "precio": 4252.55, "cat": "Otros"}, {"sku": "KGH-UA-21/HU-02-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO HONDA UNICORN", "precio": 3727.86, "cat": "Otros"}, {"sku": "KGR-EC-301-1", "nombre": "KIT JUNTAS MOTOR COMPLETO Honda XR 150", "precio": 13145.64, "cat": "Otros"}, {"sku": "KGY-YR-21/YR-04-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO R15", "precio": 5886.11, "cat": "Otros"}, {"sku": "KGY-RC-301-1/YA-06-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO RAY", "precio": 6213.11, "cat": "Otros"}, {"sku": "KGB-PC-21/BP-01-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO ROUSER 135 LS", "precio": 3114.54, "cat": "Otros"}, {"sku": "KGB-DY-21/BP-07-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO ROUSER 150 /180 DTSI", "precio": 4643.48, "cat": "Otros"}, {"sku": "KGB-PJ-21/BP-10-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO ROUSER 200NS", "precio": 6169.19, "cat": "Otros"}, {"sku": "KGY-RX-21/YX-10-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO RX-100", "precio": 5755.3, "cat": "Otros"}, {"sku": "KGS-GC-21/SG-02-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO SUZUKI GIXXER", "precio": 4643.48, "cat": "Otros"}, {"sku": "KGY-ZD-21/YZ-09-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO SZR", "precio": 5951.51, "cat": "Otros"}, {"sku": "KGY-FA-21", "nombre": "KIT JUNTAS MOTOR COMPLETO Yamaha FZ-S / FZ", "precio": 5210.86, "cat": "Otros"}, {"sku": "KGY-RV-21/YY-05-1021", "nombre": "KIT JUNTAS MOTOR COMPLETO YBR", "precio": 3593.7, "cat": "Otros"}, {"sku": "KGY-FA-207/YF-01-3009", "nombre": "KIT PEDALINES DELANTEROS FZ/FZFI", "precio": 7666.56, "cat": "Otros"}, {"sku": "KGS-GC-207/SG-02-3009", "nombre": "KIT PEDALINES DELANTEROS GIXXER", "precio": 10202.59, "cat": "Otros"}, {"sku": "KGB-PJ-207/BP-10-3009", "nombre": "KIT PEDALINES DELANTEROS ROUSER 200NS", "precio": 9163.94, "cat": "Otros"}, {"sku": "KGY-FA-208/YF-01-3012", "nombre": "KIT PEDALINES TRASEROS FZ/FZFI", "precio": 4851.5, "cat": "Otros"}, {"sku": "KGS-GC-208/SG-02-3012", "nombre": "KIT PEDALINES TRASEROS GIXXER", "precio": 5297.5, "cat": "Otros"}, {"sku": "KGB-PJ-208/BP-10-3012", "nombre": "KIT PEDALINES TRASEROS ROUSER 200NS", "precio": 8265.51, "cat": "Otros"}, {"sku": "KGB-AA-127/BG-02-3051", "nombre": "KIT PISTAS DIRECCION AVENGER", "precio": 9483.17, "cat": "Otros"}, {"sku": "KGB-BM-127/BB-05-3051", "nombre": "KIT PISTAS DIRECCION BOXER / BM 150", "precio": 7782.74, "cat": "Otros"}, {"sku": "KGY-FA-127/YF-01-3051", "nombre": "KIT PISTAS DIRECCION FZ-S, FZ", "precio": 7913.55, "cat": "Otros"}, {"sku": "KGH-UA-127/HU-02-3051", "nombre": "KIT PISTAS DIRECCION HONDA UNICORN", "precio": 7978.95, "cat": "Otros"}, {"sku": "KGB-PJ-127/BP-10-3051", "nombre": "KIT PISTAS DIRECCION ROUSER 200NS", "precio": 9025.37, "cat": "Otros"}, {"sku": "KGS-GC-127", "nombre": "KIT PISTAS DIRECCION Suzuki Gixxer", "precio": 8698.36, "cat": "Otros"}, {"sku": "KGB-BM-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Bajaj Boxer / BM 150", "precio": 49358.07, "cat": "Otros"}, {"sku": "KGB-PJ-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Bajaj Rouser 200NS", "precio": 49006.08, "cat": "Otros"}, {"sku": "KGS-GC-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Suzuki Gixxer", "precio": 33628.35, "cat": "Otros"}, {"sku": "KGY-FR-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Yamaha FZ 250 / FZ25", "precio": 29118.39, "cat": "Otros"}, {"sku": "KGY-FA-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Yamaha FZ-S / FZ", "precio": 28937.79, "cat": "Otros"}, {"sku": "KGY-FG-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Yamaha FZFI 2.0", "precio": 31446.32, "cat": "Otros"}, {"sku": "KGY-YR-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Yamaha R15", "precio": 33157.66, "cat": "Otros"}, {"sku": "KGY-ZD-1125", "nombre": "KIT PISTON PERNO AROS Y SEGUROS Yamaha SZR", "precio": 29118.39, "cat": "Otros"}, {"sku": "KGB-DR-301", "nombre": "KIT RETENES MOTOR Bajaj Dominar", "precio": 2746.85, "cat": "Otros"}, {"sku": "KGB-BM-301/BB-05-4001", "nombre": "KIT RETENES MOTOR BOXER / BM 150", "precio": 3008.45, "cat": "Otros"}, {"sku": "KGY-FG-301/YF-07-4001", "nombre": "KIT RETENES MOTOR FZFI 2.0", "precio": 2746.86, "cat": "Otros"}, {"sku": "KGS-GC-301/SG-02-4001", "nombre": "KIT RETENES MOTOR GIXXER", "precio": 3008.45, "cat": "Otros"}, {"sku": "KGH-UA-301/HU-02-4001", "nombre": "KIT RETENES MOTOR HONDA UNICORN", "precio": 2419.85, "cat": "Otros"}, {"sku": "KGY-YR-301/YR-04-4001", "nombre": "KIT RETENES MOTOR R15", "precio": 2746.86, "cat": "Otros"}, {"sku": "KGY-RC-301/YA-06-4001", "nombre": "KIT RETENES MOTOR RAY", "precio": 3270.06, "cat": "Otros"}, {"sku": "KGB-PC-301/BP-01-4001", "nombre": "KIT RETENES MOTOR ROUSER 135 LS", "precio": 3008.45, "cat": "Otros"}, {"sku": "KGB-PN-301/BP-17-4001", "nombre": "KIT RETENES MOTOR ROUSER 150/160", "precio": 2877.66, "cat": "Otros"}, {"sku": "KGB-DY-301/BP-07-4001", "nombre": "KIT RETENES MOTOR ROUSER 150 /180 DTSI", "precio": 2746.86, "cat": "Otros"}, {"sku": "KGB-PJ-301/BP-10-4001", "nombre": "KIT RETENES MOTOR ROUSER 200NS", "precio": 2616.04, "cat": "Otros"}, {"sku": "KGB-RA-301/TA-02-4001", "nombre": "KIT RETENES MOTOR RTR 160", "precio": 3270.06, "cat": "Otros"}, {"sku": "KGY-ZD-301/YZ-09-4001", "nombre": "KIT RETENES MOTOR SZR", "precio": 3073.86, "cat": "Otros"}, {"sku": "KGY-FR-301", "nombre": "KIT RETENES MOTOR Yamaha FZ 250 / FZ25", "precio": 2746.85, "cat": "Otros"}, {"sku": "KGY-FA-301", "nombre": "KIT RETENES MOTOR Yamaha FZ-S / FZ", "precio": 2746.85, "cat": "Otros"}, {"sku": "KGY-RV-301/YY-05-4001", "nombre": "KIT RETENES MOTOR YBR", "precio": 2746.86, "cat": "Otros"}, {"sku": "KGB-BM-17/BB-05-1017-HD", "nombre": "KIT TRANSMISION COMPLETO BAJAJ BOXER / BM 150", "precio": 35457.84, "cat": "Otros"}, {"sku": "KGY-FR-17/YE-01-1017-HD", "nombre": "KIT TRANSMISION COMPLETO FZ 16 / FZFI 2.0 CINTA", "precio": 39044.51, "cat": "Otros"}, {"sku": "KGH-UA-17/HU-02-1017-HD", "nombre": "KIT TRANSMISION COMPLETO HONDA CG 150 TITAN GLH 150", "precio": 38979.1, "cat": "Otros"}, {"sku": "KGY-ZD-17/YZ-09-1017-HD", "nombre": "KIT TRANSMISION COMPLETO KITS SZR", "precio": 35697.42, "cat": "Otros"}, {"sku": "KGB-PC-17", "nombre": "KIT TRANSMISION COMPLETO P 135 LS", "precio": 35457.84, "cat": "Otros"}, {"sku": "KGB-PN-17/BP-17-1017-HD", "nombre": "KIT TRANSMISION COMPLETO ROUSER 150/160 NS", "precio": 37434.38, "cat": "Otros"}, {"sku": "KGB-PJ-17/BP-10-1017-HD", "nombre": "KIT TRANSMISION COMPLETO ROUSER 200NS", "precio": 49772.75, "cat": "Otros"}, {"sku": "KGS-GC-17/SG-02-1017-HD", "nombre": "KIT TRANSMISION COMPLETO SUZUKI GIXXER", "precio": 40417.93, "cat": "Otros"}, {"sku": "KGB-RA-17/TA-02-1017-HD", "nombre": "KIT TRANSMISION COMPLETO TVS RTR 160", "precio": 35697.42, "cat": "Otros"}, {"sku": "KGY-FG-17", "nombre": "KIT TRANSMISION COMPLETO Yamaha FZFI 2.0", "precio": 35697.42, "cat": "Otros"}, {"sku": "KGY-RV-17/YB-11-1017-HD", "nombre": "KIT TRANSMISION COMPLETO YBR", "precio": 35185.83, "cat": "Otros"}, {"sku": "KGY-FG-17S/YF-07-1017-HD", "nombre": "KIT TRANSMISION YAMAHA FZ FI 2.0 MOTEXO INDIA DISCO", "precio": 38321.33, "cat": "Otros"}, {"sku": "KGY-FG-41/YF-07-1045", "nombre": "KIT VALVULAS FZFI 2.0", "precio": 3354.12, "cat": "Otros"}, {"sku": "KGK-KD-41/BK-01-1045", "nombre": "KIT VALVULAS KTM DUKE 390", "precio": 8085.83, "cat": "Otros"}, {"sku": "KGB-PN-41/BP-17-1045", "nombre": "KIT VALVULAS NS150", "precio": 7247.3, "cat": "Otros"}, {"sku": "KGB-PJ-41/BP-10-1045", "nombre": "KIT VALVULAS ROUSER NS200", "precio": 8984.25, "cat": "Otros"}, {"sku": "KGS-GC-41/SG-02-1045", "nombre": "KIT VALVULAS SUZUKI GIXXER", "precio": 3713.49, "cat": "Otros"}, {"sku": "H4-HALOGENA", "nombre": "LAMPARA HALOGENA H4 MTXO", "precio": 968.0, "cat": "Lamparas"}, {"sku": "BOSCH-LED", "nombre": "LAMPARA LED BOSCH MTXO", "precio": 2762.5, "cat": "Lamparas"}, {"sku": "H4-LED", "nombre": "LAMPARA LED H4 MTXO", "precio": 2762.5, "cat": "Lamparas"}, {"sku": "M5-LED", "nombre": "LAMPARA LED M5 / POLLERITA / 110 MTXO", "precio": 2762.5, "cat": "Lamparas"}, {"sku": "M5-HALOGENA", "nombre": "LAMPARA POLLERITA 110 HALOGENA MTXO", "precio": 968.0, "cat": "Lamparas"}, {"sku": "BOSCH-HALOGENA", "nombre": "LAMPARA TIPO BOSCH HALÓGENA MTXO", "precio": 968.0, "cat": "Lamparas"}, {"sku": "10600131", "nombre": "LUBRAX MOTO 4T PRO 10W40 - CX12F1L SEMISINTÉTICO SAE 10W-40", "precio": 8118.17, "cat": "ACEITES"}, {"sku": "KGB-PC-218", "nombre": "MANIJA EMBRAGUE PULSAR 135 LS", "precio": 2519.03, "cat": "Otros"}, {"sku": "KGH-UA-218/HU-02-3019", "nombre": "MANIJA FRENO HONDA XR150", "precio": 5166.69, "cat": "Otros"}, {"sku": "KGB-BM-300/BB-05-4015", "nombre": "RETENES SUSPENSION BAJAJ BOXER / BM 150", "precio": 1018.22, "cat": "Otros"}, {"sku": "KGB-PC-300/BP-01-4015", "nombre": "RETENES SUSPENSION BAJAJ ROUSER 135 LS", "precio": 1078.11, "cat": "Otros"}, {"sku": "KGB-DY-300/BP-07-4015", "nombre": "RETENES SUSPENSION BAJAJ ROUSER 150 /180 DTSI", "precio": 1177.22, "cat": "Otros"}, {"sku": "KGB-PJ-300", "nombre": "RETENES SUSPENSION Bajaj Rouser 200NS", "precio": 1197.9, "cat": "Otros"}, {"sku": "KGB-DR-300/BN-01-4015", "nombre": "RETENES SUSPENSION DOMINAR", "precio": 1677.06, "cat": "Otros"}, {"sku": "KGY-FG-300/YF-07-4015", "nombre": "RETENES SUSPENSION FZFI 2.0", "precio": 1257.8, "cat": "Otros"}, {"sku": "KGH-UA-300/HU-02-4015", "nombre": "RETENES SUSPENSION HONDA CG 150 TITAN GLH 150", "precio": 1177.22, "cat": "Otros"}, {"sku": "KGY-YR-300/YR-04-4015", "nombre": "RETENES SUSPENSION R15", "precio": 1197.9, "cat": "Otros"}, {"sku": "KGB-PN-300/BP-17-4015", "nombre": "RETENES SUSPENSION ROUSER 150/160", "precio": 1078.11, "cat": "Otros"}, {"sku": "KGS-GC-300/SG-02-4015", "nombre": "RETENES SUSPENSION SUZUKI GIXXER", "precio": 1831.24, "cat": "Otros"}, {"sku": "KGY-ZD-300/YZ-09-4015", "nombre": "RETENES SUSPENSION SZR", "precio": 1257.8, "cat": "Otros"}, {"sku": "KGB-RA-300/TA-02-4015", "nombre": "RETENES SUSPENSION TVS RTR 160", "precio": 1177.22, "cat": "Otros"}, {"sku": "KGY-FA-300", "nombre": "RETENES SUSPENSION Yamaha FZ-S / FZ", "precio": 1257.8, "cat": "Otros"}, {"sku": "KGY-RC-300/YA-06-4015", "nombre": "RETENES SUSPENSION YAMAHA RAY", "precio": 1177.22, "cat": "Otros"}, {"sku": "KGY-RX-300", "nombre": "RETENES SUSPENSION Yamaha RX 100", "precio": 855.91, "cat": "Otros"}, {"sku": "KGY-RV-300/YY-05-4015", "nombre": "RETENES SUSPENSION YBR", "precio": 958.32, "cat": "Otros"}, {"sku": "6001", "nombre": "RULEMANES 6001", "precio": 956.22, "cat": "RULEMANES"}, {"sku": "6002", "nombre": "RULEMANES 6002", "precio": 956.22, "cat": "RULEMANES"}, {"sku": "6003", "nombre": "RULEMANES 6003", "precio": 1071.63, "cat": "RULEMANES"}, {"sku": "6302", "nombre": "RULEMANES 6302", "precio": 1318.92, "cat": "RULEMANES"}, {"sku": "KGY-RV-218", "nombre": "SET MANIAJ FRENO EMBRAGUE PULSAR NS200", "precio": 5208.1, "cat": "Otros"}, {"sku": "KGY-RX-218", "nombre": "SET MANIJA FRENO EMBRAGUE YBR 125 Yamaha RX 100", "precio": 5037.53, "cat": "Otros"}, {"sku": "KGB-PJ-218", "nombre": "SET MANIJAS BAJAJ ROUSER NS 200 MOTEXO INDIA", "precio": 5208.1, "cat": "Otros"}, {"sku": "KGB-BM-218/BB-05-3019", "nombre": "SET MANIJAS FRENO EMBRAGUE BM 150", "precio": 5166.69, "cat": "Otros"}, {"sku": "KGB-DR-218", "nombre": "SET MANIJAS FRENO EMBRAGUE DOMINAR", "precio": 5297.5, "cat": "Otros"}, {"sku": "KGY-FA-218", "nombre": "SET MANIJAS FRENO EMBRAGUE -FZ16/ FAZER Yamaha FZ-S / FZ", "precio": 4822.32, "cat": "Otros"}, {"sku": "KGB-AA-218", "nombre": "SET MANIJAS FRENO EMBRAGUE KTM DUKE 250/390", "precio": 5593.89, "cat": "Otros"}, {"sku": "KGS-GC-218", "nombre": "SET MANIJAS FRENO EMBRAGUE SUZUKI GIXXER", "precio": 5143.8, "cat": "Otros"}, {"sku": "KGY-FG-218/YF-07-3019", "nombre": "SET MANIJAS YAMAHA FZ FI 2.0 FZ 16 MOTEXO INDIA", "precio": 4905.1, "cat": "Otros"}];
+
+const ORDEN_CATEGORIAS = [
+  "ACEITES",
+  "BUJIAS",
+  "CABLES",
+  "CORREAS",
+  "DIRECCION",
+  "EMBRAGUE",
+  "ESPEJOS",
+  "FILTROS",
+  "KIT CILINDRO",
+  "KIT JUNTAS",
+  "KIT PISTON",
+  "LAMPARAS",
+  "MANIJAS",
+  "PEDALINES",
+  "RETENES",
+  "RULEMANES",
+  "TRANSMISION",
+  "VALVULAS",
+  "OTROS"
+];
+
+let cart = {};
+let catSel = "Todos";
+let reviewFilterCat = "TODAS";
+
+function fmt(n) {
+  return Number(n || 0).toLocaleString("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function norm(s) {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase()
+    .trim();
+}
+
+function titleCase(str) {
+  return String(str || "").toLowerCase().replace(/\b\w/g, m => m.toUpperCase());
+}
+
+function limpiarNombre(nombre, sku = "") {
+  let n = String(nombre || "").trim();
+  const s = String(sku || "").trim();
+
+  n = n.replace(/^[\/&\-\.,;\s]+/, "");
+  n = n.replace(/\s*-\s*/g, " ");
+  n = n.replace(/\s+/g, " ").trim();
+
+  if (s) {
+    const escapedSku = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    n = n.replace(new RegExp("^" + escapedSku + "\\s+", "i"), "");
+  }
+
+  n = n.replace(/^BANDO\s+/i, "CORREA BANDO ");
+  n = n.replace(/^BUJIAS?\s+NIPO\s+DENSO(?:\s+JAPON)?/i, "BUJIA DENSO");
+  n = n.replace(/^BUJIA\s*NGK\s*/i, "BUJIA NGK ");
+  n = n.replace(/^BUJIA\s*DENSO\s*/i, "BUJIA DENSO ");
+  n = n.replace(/\bFILTRO ACEITE\b/gi, "FILTRO DE ACEITE");
+  n = n.replace(/\bFILTRO AIRE\b/gi, "FILTRO DE AIRE");
+  n = n.replace(/\bJUEGO ESPEJOS\b/gi, "JUEGO DE ESPEJOS");
+  n = n.replace(/\bKIT JUNTAS MOTOR COMPLETO\b/gi, "KIT DE JUNTAS MOTOR COMPLETO");
+  n = n.replace(/\bKIT PISTAS DIRECCION\b/gi, "KIT DE PISTAS DE DIRECCION");
+  n = n.replace(/\bKIT PEDALINES DELANTEROS\b/gi, "KIT DE PEDALINES DELANTEROS");
+  n = n.replace(/\bKIT PEDALINES TRASEROS\b/gi, "KIT DE PEDALINES TRASEROS");
+  n = n.replace(/\bKIT DISCOS EMBRAGUE\b/gi, "KIT DE DISCOS DE EMBRAGUE");
+  n = n.replace(/\bJUEGO DISCOS EMBRAGUE\b/gi, "JUEGO DE DISCOS DE EMBRAGUE");
+  n = n.replace(/\bKIT RETENES MOTOR\b/gi, "KIT DE RETENES DE MOTOR");
+  n = n.replace(/\bKIT CILINDRO PISTON Y AROS PERNO Y SEG STD\b/gi, "KIT DE CILINDRO, PISTON, AROS, PERNO Y SEGUROS STD");
+  n = n.replace(/\bKIT PISTON PERNO AROS Y SEGUROS\b/gi, "KIT DE PISTON, PERNO, AROS Y SEGUROS");
+  n = n.replace(/\bSET MANIAJ\b/gi, "SET MANIJAS");
+  n = n.replace(/\bMANIAJ\b/gi, "MANIJAS");
+  n = n.replace(/\bHALOGENA\b/gi, "HALÓGENA");
+  n = n.replace(/\bSEMISINTETICO\b/gi, "SEMISINTÉTICO");
+  n = n.replace(/\bMOTO 4T PRO\b/gi, "MOTO 4T PRO");
+  n = n.replace(/\s*\/\s*/g, " / ");
+  n = n.replace(/\bAPLICA A\b/gi, "APLICA A");
+  n = n.replace(/\s+/g, " ").trim();
+
+  return n;
+}
+
+function detectarCategoria(p) {
+  const texto = norm(`${p.sku || ""} ${p.nombre || ""} ${p.cat || ""}`);
+
+  if (texto.includes("ACEITE") || texto.includes("YAMALUBE") || texto.includes("LUBRAX") || /\b\d(1, 2)W\d2\b/.test(texto)) return "ACEITES";
+  if (texto.includes("BUJIA")) return "BUJIAS";
+  if (texto.includes("CABLE")) return "CABLES";
+  if (texto.includes("CORREA")) return "CORREAS";
+  if (texto.includes("PISTAS DE DIRECCION") || texto.includes("DIRECCION")) return "DIRECCION";
+  if (texto.includes("EMBRAGUE")) return "EMBRAGUE";
+  if (texto.includes("ESPEJO")) return "ESPEJOS";
+  if (texto.includes("FILTRO")) return "FILTROS";
+  if (texto.includes("KIT DE CILINDRO") || texto.includes("KIT CILINDRO")) return "KIT CILINDRO";
+  if (texto.includes("KIT DE JUNTAS") || texto.includes("KIT JUNTAS")) return "KIT JUNTAS";
+  if (texto.includes("KIT DE PISTON") || texto.includes("KIT PISTON")) return "KIT PISTON";
+  if (texto.includes("FARO") || texto.includes("LAMPARA") || texto.includes("LÁMPARA")) return "LAMPARAS";
+  if (texto.includes("MANIJA") || texto.includes("MANIJAS")) return "MANIJAS";
+  if (texto.includes("PEDALINES")) return "PEDALINES";
+  if (texto.includes("RETENES")) return "RETENES";
+  if (texto.includes("RULEMAN")) return "RULEMANES";
+  if (texto.includes("TRANSMISION")) return "TRANSMISION";
+  if (texto.includes("VALVULAS")) return "VALVULAS";
+
+  return "OTROS";
+}
+
+function formatearNombrePro(nombre, cat = "") {
+  let n = String(nombre || "").trim();
+  const c = String(cat || "").trim().toUpperCase();
+
+  n = n.replace(/\bENFIELD\b/gi, "ROYAL ENFIELD");
+  n = n.replace(/\bFZFI\b/gi, "FZ FI");
+  n = n.replace(/\bFZ16\b/gi, "FZ16");
+  n = n.replace(/\bFZ25\b/gi, "FZ25");
+  n = n.replace(/\bFZ250\b/gi, "FZ250");
+  n = n.replace(/\bRX[\s\-]?100\b/gi, "RX 100");
+  n = n.replace(/\bXR ?150\b/gi, "XR150");
+  n = n.replace(/\bROUSER 135 LS\b/gi, "ROUSER 135LS");
+  n = n.replace(/\bNS200\b/gi, "NS200");
+  n = n.replace(/\bPULSAR\b/gi, "PULSAR");
+  n = n.replace(/\bRTR\b/gi, "RTR");
+  n = n.replace(/\bGIXXER\b/gi, "GIXXER");
+  n = n.replace(/\bDOMINAR\b/gi, "DOMINAR");
+  n = n.replace(/\bFAZER\b/gi, "FAZER");
+  n = n.replace(/\bYBR\b/gi, "YBR");
+  n = n.replace(/\bRAY\b/gi, "RAY");
+
+  if (c === "CORREAS" && /^\d+[A-Z]?\s*X\s*\d+/i.test(n)) {
+    n = "CORREA " + n;
+  }
+  if (c === "BUJIAS" && !/^BUJIA\b/i.test(n)) {
+    n = "BUJIA " + n;
+  }
+  if (c === "LAMPARAS") {
+    n = n.replace(/\bOFF\s*ROAD\b/gi, "OFF-ROAD");
+    n = n.replace(/\bWATERPROOF\b/gi, "WATERPROOF");
+  }
+
+  n = n.replace(/\s+/g, " ").trim();
+  return n;
+}
+
+function autocorregirNombreRoto(nombre, sku = "", cat = "") {
+  let n = String(nombre || "").trim();
+  const s = String(sku || "").trim();
+  const c = String(cat || "").trim().toUpperCase();
+
+  if (s) {
+    const escapedSku = s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    n = n.replace(new RegExp("\\b" + escapedSku + "\\b", "gi"), "").replace(/\s+/g, " ").trim();
+  }
+
+  n = n.replace(/^[\/&\-\.,;\s]+/, "").trim();
+  n = n.replace(/\s*\/\s*/g, " / ");
+  n = n.replace(/\s+/g, " ").trim();
+
+  if (c === "FILTROS" || c === "KIT JUNTAS" || c === "EMBRAGUE") {
+    n = n.replace(/\s+HONDA XR150\b/gi, "").trim();
+  }
+
+  if (c === "LAMPARAS") {
+    n = n.replace(/\s*-\s*DESPACHO.*$/i, "").trim();
+  }
+
+  n = n.replace(/\b(\w+)\s+\1\b/gi, "$1");
+  n = n.replace(/\s+\/\s+$/g, "");
+  n = n.replace(/\s+/g, " ").trim();
+  return n;
+}
+
+function requiereRevisionManual(p) {
+  const sku = String(p.sku || "").trim();
+  const nombre = String(p.nombre || "").trim();
+  const cat = String(p.cat || "").trim().toUpperCase();
+  const motivos = [];
+  const nombreUpper = nombre.toUpperCase();
+
+  const nombresGenericos = [
+    "FILTRO DE AIRE",
+    "FILTRO DE ACEITE",
+    "JUEGO DE ESPEJOS",
+    "KIT DE DISCOS DE EMBRAGUE",
+    "KIT DE JUNTAS MOTOR COMPLETO",
+    "KIT DE RETENES DE MOTOR",
+    "KIT DE PISTON, PERNO, AROS Y SEGUROS",
+    "KIT DE CILINDRO, PISTON, AROS, PERNO Y SEGUROS STD"
+  ];
+
+  if (!nombre) motivos.push("sin nombre");
+  if (nombresGenericos.includes(nombreUpper)) motivos.push("nombre genérico");
+  if (nombre.length > 90) motivos.push("nombre largo");
+  if ((nombre.match(/\//g) || []).length >= 3) motivos.push("muchos /");
+  if (/\bWATERPROOF\b|\bIP67\b|\bOFF-?ROAD\b|\bV BELT\b/i.test(nombre)) motivos.push("texto técnico");
+  if (sku && nombreUpper.includes(sku.toUpperCase())) motivos.push("sku visible");
+  if (/^[\/&\-]/.test(nombre) || /\s{2,}/.test(nombre)) motivos.push("formato sucio");
+
+  const marcas = ["YAMAHA", "HONDA", "SUZUKI", "BAJAJ", "TVS", "KTM", "ROYAL ENFIELD", "GILERA", "ZANELLA", "MOTOMEL"];
+  const encontradas = marcas.filter(m => nombreUpper.includes(m));
+  if (encontradas.length >= 2) motivos.push("mezcla de marcas");
+
+  if (/HONDA XR150/i.test(nombre) && cat !== "FILTROS") motivos.push("posible aplicación mezclada");
+
+  return [...new Set(motivos)];
+}
+
+productos.forEach(p => {
+  p.nombreOriginal = p.nombre;
+  p.nombre = limpiarNombre(p.nombre, p.sku);
+  p.cat = detectarCategoria(p);
+  p.nombre = formatearNombrePro(p.nombre, p.cat);
+  p.nombre = autocorregirNombreRoto(p.nombre, p.sku, p.cat);
+});
+
+const cats = ["Todos", ...ORDEN_CATEGORIAS.filter(cat => productos.some(p => p.cat === cat))];
+
+function buildCats() {
+  document.getElementById("cat-pills").innerHTML = cats.map(c =>
+    `<div class="cpill${c === catSel ? " sel" : ""}" onclick="selCat(${JSON.stringify(c)})">${escapeHtml(c)}</div>`
+  ).join("");
+}
+
+function selCat(c) {
+  catSel = c;
+  render();
+}
+
+function getFiltered() {
+  const q = document.getElementById("search").value.toLowerCase().trim();
+  return productos.filter(p => {
+    const matchCat = catSel === "Todos" || p.cat === catSel;
+    const matchQ = !q || p.nombre.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+}
+
+function changeQty(sku, delta) {
+  cart[sku] = (cart[sku] || 0) + delta;
+  if (cart[sku] <= 0) delete cart[sku];
+  render();
+}
+
+function toggleReviewPanel() {
+  document.getElementById("review-body").classList.toggle("open");
+}
+
+function setReviewFilterCat(cat) {
+  reviewFilterCat = cat;
+  renderReviewPanel();
+}
+
+function renderReviewPanel() {
+  const sub = document.getElementById("review-sub");
+  const filtersEl = document.getElementById("review-filters");
+  const listEl = document.getElementById("review-list");
+
+  const items = productos
+    .map(p => ({ ...p, motivos: requiereRevisionManual(p) }))
+    .filter(p => p.motivos.length > 0);
+
+  sub.textContent = `${items.length} producto${items.length === 1 ? "" : "s"} para revisar`;
+
+  const categoriasRevision = ["TODAS", ...ORDEN_CATEGORIAS.filter(cat => items.some(p => p.cat === cat))];
+  if (!categoriasRevision.includes(reviewFilterCat)) reviewFilterCat = "TODAS";
+
+  filtersEl.innerHTML = categoriasRevision.map(cat => `
+    <button class="review-filter-btn ${reviewFilterCat === cat ? "active" : ""}" onclick="setReviewFilterCat(${JSON.stringify(cat)})">
+      ${escapeHtml(cat)}
+    </button>
+  `).join("");
+
+  const filtrados = reviewFilterCat === "TODAS"
+    ? items
+    : items.filter(p => p.cat === reviewFilterCat);
+
+  if (!filtrados.length) {
+    listEl.innerHTML = `<div class="review-empty">No hay productos para revisar en esta categoría.</div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtrados.map(p => `
+    <div class="review-item">
+      <div class="review-top">
+        <div>
+          <div class="review-name">${escapeHtml(p.nombre)}</div>
+          <div class="review-sku">SKU: ${escapeHtml(p.sku || "-")}</div>
+        </div>
+        <div class="review-cat">${escapeHtml(p.cat || "OTROS")}</div>
+      </div>
+      <div class="review-motivos">
+        ${p.motivos.map(m => `<span class="review-tag">${escapeHtml(m)}</span>`).join("")}
+      </div>
+      ${p.nombreOriginal && p.nombreOriginal !== p.nombre ? `
+        <div class="review-original"><strong>Original:</strong> ${escapeHtml(p.nombreOriginal)}</div>
+      ` : ""}
+    </div>
+  `).join("");
+}
+
+function render() {
+  buildCats();
+
+  const filtered = getFiltered();
+  const list = document.getElementById("prod-list");
+  const resultsMeta = document.getElementById("results-meta");
+
+  resultsMeta.textContent = `${filtered.length} producto${filtered.length === 1 ? "" : "s"}${catSel !== "Todos" ? " en " + catSel : ""}`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="no-results">No se encontraron productos.</div>`;
+  } else {
+    list.innerHTML = filtered.map(p => {
+      const q = cart[p.sku] || 0;
+      const motivos = requiereRevisionManual(p);
+      const tieneRevision = motivos.length > 0;
+
+      return `<div class="prod-row${tieneRevision ? " needs-review" : ""}">
+        <div class="prod-left">
+          <div class="prod-name" title="${escapeHtml(motivos.join(" | "))}">${escapeHtml(p.nombre)}</div>
+          <div class="prod-meta">
+            <div class="prod-sku">${escapeHtml(p.sku)}</div>
+            <div class="prod-tag">${escapeHtml(p.cat)}</div>
+            ${tieneRevision ? `<div class="review-dot">Revisar</div>` : ""}
+          </div>
+        </div>
+        <span class="prod-price">${fmt(p.precio)}</span>
+        <div class="qty-ctrl">
+          <button class="qbtn${q === 0 ? " zero" : ""}" onclick="changeQty(${JSON.stringify(p.sku)}, -1)">−</button>
+          <span class="qval">${q}</span>
+          <button class="qbtn" onclick="changeQty(${JSON.stringify(p.sku)}, 1)">+</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  const items = Object.entries(cart);
+  const totalItems = items.reduce((s, [, q]) => s + q, 0);
+  const total = items.reduce((s, [sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    return s + (p ? p.precio * qty : 0);
+  }, 0);
+
+  document.getElementById("cart-label").textContent = totalItems > 0
+    ? `${totalItems} prod · ${fmt(total)}`
+    : "0 productos";
+
+  const sec = document.getElementById("cart-section");
+  const title = document.getElementById("cart-title");
+
+  if (items.length === 0) {
+    title.textContent = "";
+    sec.innerHTML = `<p class="empty-msg">Todavía no agregaste productos al pedido.</p>`;
+    renderReviewPanel();
+    return;
+  }
+
+  title.textContent = "TU PEDIDO";
+  const rows = items.map(([sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    return `<div class="sum-row"><span class="sum-name">${escapeHtml(p.nombre)} ×${qty}</span><span>${fmt(p.precio * qty)}</span></div>`;
+  }).join("");
+
+  sec.innerHTML = `
+    <div class="summary">
+      ${rows}
+      <div class="sum-total"><span>Total</span><span>${fmt(total)}</span></div>
+    </div>
+    <button class="wpp-btn" onclick="enviarWpp()">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="white">
+        <path d="M8 1C4.13 1 1 4.13 1 8c0 1.25.33 2.42.9 3.43L1 15l3.67-.87A7 7 0 108 1zm0 12.6a5.6 5.6 0 01-2.85-.78l-.2-.12-2.18.52.54-2.12-.13-.21A5.6 5.6 0 118 13.6zm3.07-4.17c-.17-.08-1-.49-1.15-.54-.16-.06-.27-.08-.38.08s-.44.54-.54.65c-.1.1-.2.12-.37.04-.17-.08-.72-.27-1.37-.86a5.2 5.2 0 01-.95-1.2c-.1-.17-.01-.26.07-.34.08-.08.17-.2.25-.3.09-.1.12-.17.17-.28.06-.1.03-.2-.01-.28-.05-.08-.38-.92-.52-1.26-.14-.33-.28-.28-.38-.29h-.33c-.1 0-.27.04-.42.2-.14.16-.56.55-.56 1.33s.57 1.54.65 1.65c.08.1 1.12 1.71 2.72 2.4.38.16.68.26.91.33.38.12.73.1 1 .06.31-.05 1-.41 1.14-.8.14-.4.14-.74.1-.81-.05-.07-.16-.11-.33-.19z"/>
+      </svg>
+      Enviar pedido por WhatsApp
+    </button>`;
+
+  renderReviewPanel();
+}
+
+function enviarWpp() {
+  const items = Object.entries(cart);
+  if (items.length === 0) return;
+
+  const total = items.reduce((s, [sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    return s + (p ? p.precio * qty : 0);
+  }, 0);
+
+  let msg = "Hola Motexo! Te paso mi pedido:\n\n";
+  items.forEach(([sku, qty]) => {
+    const p = productos.find(x => x.sku === sku);
+    msg += `• ${p.nombre} (${sku}) ×${qty} — ${fmt(p.precio * qty)}\n`;
+  });
+  msg += `\n*Total: ${fmt(total)}*`;
+
+  window.open(`https://wa.me/${WPP_NUMERO}?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+function scrollToCart() {
+  document.getElementById("cart-section").scrollIntoView({ behavior: "smooth" });
+}
+
+render();
+</script>
+
+</body>
+</html>
