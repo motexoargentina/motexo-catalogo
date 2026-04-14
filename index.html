@@ -81,13 +81,32 @@ function limpiarNombre(nombre, sku) {
   return n.replace(/\s+/g, ' ');
 }
 
-function normalizarCategoria(cat) {
+function normalizarCategoria(cat, nombre) {
   const c = normalizarTexto(cat).toUpperCase();
-  if (c.includes('ACEITE')) return 'ACEITES';
-  if (c.includes('BUJIA')) return 'BUJIAS';
-  if (c.includes('CORREA')) return 'CORREAS';
-  if (c.includes('LAMP')) return 'LAMPARAS';
-  if (c.includes('RULEM')) return 'RULEMANES';
+  const n = normalizarTexto(nombre).toUpperCase();
+  const text = (c + ' ' + n).trim();
+
+  if (text.includes('ACEITE') && text.includes('FILTRO')) return 'FILTROS';
+  if (text.includes('FILTRO')) return 'FILTROS';
+  if (text.includes('ACEITE')) return 'ACEITES';
+  if (text.includes('BUJIA')) return 'BUJIAS';
+  if (text.includes('CORREA')) return 'CORREAS';
+  if (text.includes('LAMP') || text.includes('FARO')) return 'LAMPARAS';
+  if (text.includes('RULEM')) return 'RULEMANES';
+  if (text.includes('CABLE')) return 'CABLES';
+  if (text.includes('ESPEJO')) return 'ESPEJOS';
+  if (text.includes('MANIJA')) return 'MANIJAS';
+  if (text.includes('PEDALIN')) return 'PEDALINES';
+  if (text.includes('PISTAS DIRECCION')) return 'DIRECCION';
+  if (text.includes('TRANSMISION')) return 'TRANSMISION';
+  if (text.includes('RETENES SUSPENSION')) return 'RETENES DE SUSPENSION';
+  if (text.includes('RETENES MOTOR')) return 'RETENES DE MOTOR';
+  if (text.includes('JUNTAS MOTOR')) return 'JUNTAS DE MOTOR';
+  if (text.includes('VALVULAS')) return 'VALVULAS';
+  if (text.includes('PISTON') || text.includes('CILINDRO') || text.includes('AROS')) return 'PISTON Y CILINDRO';
+  if (text.includes('EMBRAGUE')) return 'EMBRAGUE';
+  if (text.includes('KIT')) return 'KITS';
+
   return (String(cat || 'OTROS').trim().toUpperCase()) || 'OTROS';
 }
 
@@ -96,10 +115,21 @@ const productos = productosRaw.map((p, i) => ({
   sku: String(p.sku || '').trim(),
   nombre: limpiarNombre(p.nombre, p.sku),
   precio: Number(p.precio || 0),
-  cat: normalizarCategoria(p.cat)
+  cat: normalizarCategoria(p.cat, p.nombre)
 })).filter(p => p.sku && p.nombre);
 
-const categorias = ['TODOS', ...Array.from(new Set(productos.map(p => p.cat))).sort((a,b)=>a.localeCompare(b,'es'))];
+const ordenCategorias = ['TODOS', 'ACEITES', 'BUJIAS', 'CABLES', 'CORREAS', 'EMBRAGUE', 'ESPEJOS', 'FILTROS', 'JUNTAS DE MOTOR', 'LAMPARAS', 'MANIJAS', 'PEDALINES', 'PISTON Y CILINDRO', 'RETENES DE MOTOR', 'RETENES DE SUSPENSION', 'RULEMANES', 'TRANSMISION', 'DIRECCION', 'VALVULAS', 'KITS', 'OTROS'];
+const categoriasUnicas = Array.from(new Set(productos.map(p => p.cat)));
+const categorias = ['TODOS', ...categoriasUnicas
+  .filter(cat => cat !== 'TODOS')
+  .sort((a, b) => {
+    const ia = ordenCategorias.indexOf(a);
+    const ib = ordenCategorias.indexOf(b);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    if (ia !== -1) return -1;
+    if (ib !== -1) return 1;
+    return a.localeCompare(b, 'es');
+  })];
 
 function formatPrice(v) {
   return '$' + Number(v || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
