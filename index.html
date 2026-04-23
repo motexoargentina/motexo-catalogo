@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Motexo Repuestos — Catálogo</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }const items = productos.filter(p => carrito[p.sku]);
 :root {
   --bg:#f5f5f5; --card:#fff; --line:#e5e5e5; --text:#111; --muted:#777; --soft:#999; --brand:#e63000; --green:#25D366;
 }
@@ -282,14 +282,7 @@ function renderProductQuantities() {
 
 function renderCart() {
   const section = document.getElementById('cart-section');
-  const items = productos.filter(p => carrito[p.sku]);
-  document.getElementById('cart-label').textContent = `${totalItems()} producto${totalItems() === 1 ? '' : 's'}`;
-  if (!items.length) {
-    section.innerHTML = '<div class="empty-msg">Todavía no agregaste productos al carrito.</div>';
-    return;
-  }
-  const rows = items.map(p => `
-    <div class="sum-row">
+ 
       <div class="sum-name">${carrito[p.sku]}x ${p.nombre}</div>
       <div>${formatPrice(carrito[p.sku] * p.precio)}</div>
     </div>`).join('');
