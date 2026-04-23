@@ -178,7 +178,7 @@ function scrollToCart() {
 function sendWhatsApp() {
   const items = productos.filter(p => carrito[p.sku]);
   if (!items.length) return;
-  let mensaje = 'Hola, quiero pedir:%0A%0A';
+  let mensaje = 'Nombre: CUIT: Hola, quiero pedir:%0A%0A';
   items.forEach(p => {
     mensaje += `${carrito[p.sku]}x ${p.nombre} (${p.sku})%0A`;
   });
