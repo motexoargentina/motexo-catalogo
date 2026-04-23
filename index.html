@@ -194,23 +194,27 @@ function sendWhatsApp() {
     return;
   }
 
+  // 🔹 Armamos el mensaje NORMAL (sin encode)
   let mensaje = '';
 
-  mensaje += `Nombre: ${encodeURIComponent(nombre)}%0A`;
+  mensaje += `Nombre: ${nombre}\n`;
 
   if (cuit) {
-    mensaje += `CUIT: ${encodeURIComponent(cuit)}%0A`;
+    mensaje += `CUIT: ${cuit}\n`;
   }
 
-  mensaje += `%0AHola, quiero pedir:%0A%0A`;
+  mensaje += `\nHola, quiero pedir:\n\n`;
 
   items.forEach(p => {
-    mensaje += `${carrito[p.sku]}x ${encodeURIComponent(p.nombre)} (${encodeURIComponent(p.sku)})%0A`;
+    mensaje += `${carrito[p.sku]}x ${p.nombre} (${p.sku})\n`;
   });
 
-  mensaje += `%0ATotal: ${encodeURIComponent(formatPrice(totalMonto()))}`;
+  mensaje += `\nTotal: ${formatPrice(totalMonto())}`;
 
-  window.open(`https://wa.me/${WPP_NUMERO}?text=${mensaje}`, '_blank');
+  // 🔹 Codificamos TODO junto al final
+  const mensajeFinal = encodeURIComponent(mensaje);
+
+  window.open(`https://wa.me/${WPP_NUMERO}?text=${mensajeFinal}`, '_blank');
 }
 
 function renderCategorias() {
