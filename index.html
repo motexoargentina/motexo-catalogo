@@ -185,11 +185,31 @@ function scrollToCart() {
 function sendWhatsApp() {
   const items = productos.filter(p => carrito[p.sku]);
   if (!items.length) return;
-  let mensaje = 'Hola, quiero pedir:%0A%0A';
+
+  const nombre = document.getElementById('cliente-nombre').value.trim();
+  const cuit = document.getElementById('cliente-cuit').value.trim();
+
+  if (!nombre) {
+    alert('Completá el nombre o empresa');
+    return;
+  }
+
+  let mensaje = '';
+
+  mensaje += `Nombre: ${encodeURIComponent(nombre)}%0A`;
+
+  if (cuit) {
+    mensaje += `CUIT: ${encodeURIComponent(cuit)}%0A`;
+  }
+
+  mensaje += `%0AHola, quiero pedir:%0A%0A`;
+
   items.forEach(p => {
-    mensaje += `${carrito[p.sku]}x ${p.nombre} (${p.sku})%0A`;
+    mensaje += `${carrito[p.sku]}x ${encodeURIComponent(p.nombre)} (${encodeURIComponent(p.sku)})%0A`;
   });
+
   mensaje += `%0ATotal: ${encodeURIComponent(formatPrice(totalMonto()))}`;
+
   window.open(`https://wa.me/${WPP_NUMERO}?text=${mensaje}`, '_blank');
 }
 
