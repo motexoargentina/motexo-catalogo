@@ -247,7 +247,7 @@ function renderProducts() {
     const qty = carrito[p.sku] || 0;
     return `
       <div class="prod-row">
-      <img src="img/${p.sku}.webp" onerror="this.style.display='none'" style="width:60px; height:60px; object-fit:contain; border-radius:8px; margin-right:8px;">
+      <img src="img/${p.sku.split('/')[0]}.webp" onerror="this.style.display='none'" style="width:60px; height:60px; object-fit:contain; border-radius:8px; margin-right:8px;">
       
         <div class="prod-left">
           <div class="prod-name">${p.nombre}</div>
