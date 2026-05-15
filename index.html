@@ -248,7 +248,7 @@ function renderProducts() {
     return `
       <div class="prod-row">
 <img 
-  src="img/${p.sku}.webp"
+  src="img/${p.sku.split('/')[0]}.webp"
   onerror="if(!this.dataset.fallback){this.dataset.fallback=1;this.src='img/'+p.sku+'.jpg'}else if(this.dataset.fallback==1){this.dataset.fallback=2;this.src='img/'+p.sku+'.jpeg'}else if(this.dataset.fallback==2){this.dataset.fallback=3;this.src='img/'+p.sku+'.png'}else{this.style.display='none'}"
   style="width:60px; height:60px; object-fit:contain; border-radius:8px; margin-right:8px;"
 >      
